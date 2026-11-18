@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.mariahernandez.cristalia.SessionRepository
-import me.mariahernandez.cristalia.SessionRepositoryFalso
+import me.mariahernandez.cristalia.SessionRepositoryImpl
 import me.mariahernandez.cristalia.celdaunitaria.EventoUi
 import com.cristalia.model.EstructuraCristalina
 
@@ -64,7 +64,7 @@ data class IngresarDatosUiState(
 
 class IngresarDatosViewModel(
     savedStateHandle: SavedStateHandle? = null,
-    private val session: SessionRepository = SessionRepositoryFalso
+    private val session: SessionRepository = SessionRepositoryImpl
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(IngresarDatosUiState())

@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.mariahernandez.cristalia.SessionRepository
-import me.mariahernandez.cristalia.SessionRepositoryFalso
+import me.mariahernandez.cristalia.SessionRepositoryImpl
 import me.mariahernandez.cristalia.celdaunitaria.EventoUi
+import me.mariahernandez.cristalia.perfil.HistorialRepositoryImpl
+import me.mariahernandez.cristalia.perfil.OperacionBadge
 
 data class DetalleHuecosUiState(
     /** Datos de la estructura elegida; null mientras no se ha cargado o si el id no existe. */
@@ -20,7 +22,7 @@ data class DetalleHuecosUiState(
 
 //                                       sesion          tipo           valor por defecto
 class DetalleHuecosViewModel(
-    private val session: SessionRepository = SessionRepositoryFalso
+    private val session: SessionRepository = SessionRepositoryImpl
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DetalleHuecosUiState())
@@ -39,6 +41,15 @@ class DetalleHuecosViewModel(
     fun onDescargarClick(archivoGlb: String) {
         viewModelScope.launch {
             if (session.estaLogueado()) {
+                val tituloInfo = _uiState.value.info?.etiquetaGlb ?: "Huecos 3D"
+                val textoNc = _uiState.value.info?.textoNc ?: "3D"
+                HistorialRepositoryImpl.agregarCalculo(
+                    titulo = "Huecos ($tituloInfo)",
+                    descripcion = "Visualización 3D guardada/descargada",
+                    tipoEstructura = "HUECO",
+                    badges = listOf(OperacionBadge("Coordinación", textoNc)),
+                    esDescarga = true
+                )
                 _eventos.send(EventoUi.Descargar(archivoGlb))
             } else {
                 _eventos.send(EventoUi.IrALogin)

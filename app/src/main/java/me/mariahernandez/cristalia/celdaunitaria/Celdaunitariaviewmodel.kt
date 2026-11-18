@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.mariahernandez.cristalia.SessionRepository
-import me.mariahernandez.cristalia.SessionRepositoryFalso
+import me.mariahernandez.cristalia.SessionRepositoryImpl
+import me.mariahernandez.cristalia.perfil.HistorialRepositoryImpl
+import me.mariahernandez.cristalia.perfil.OperacionBadge
 
 /** Estado que sobrevive a la rotación de pantalla. */
 data class CeldaUnitariaUiState(
@@ -26,7 +28,7 @@ sealed interface EventoUi {
 // Filtro de inicio de sesión. Si inició sesión puede descargar, de lo contrario no
 
 //                                       sesion          tipo           valor por defecto         clase padre
-class CeldaUnitariaViewModel(private val session: SessionRepository = SessionRepositoryFalso) : ViewModel() {
+class CeldaUnitariaViewModel(private val session: SessionRepository = SessionRepositoryImpl) : ViewModel() {
 
     // Estado (Lo que la pantalla observa)
     private val _uiState = MutableStateFlow(CeldaUnitariaUiState() )         // (1) Crea el estado inicial (SC sale primero)
@@ -45,6 +47,13 @@ class CeldaUnitariaViewModel(private val session: SessionRepository = SessionRep
     fun onDescargarClick(archivoGlb: String) {
         viewModelScope.launch {
             if (session.estaLogueado()) {
+                HistorialRepositoryImpl.agregarCalculo(
+                    titulo = "Celda Unitaria (${_uiState.value.tipoSeleccionado.sigla})",
+                    descripcion = "Modelo 3D guardado/descargado",
+                    tipoEstructura = _uiState.value.tipoSeleccionado.sigla,
+                    badges = listOf(OperacionBadge("Modelo", "GLB")),
+                    esDescarga = true
+                )
                 _eventos.send(EventoUi.Descargar(archivoGlb))
             } else {
                 _eventos.send(EventoUi.IrALogin)

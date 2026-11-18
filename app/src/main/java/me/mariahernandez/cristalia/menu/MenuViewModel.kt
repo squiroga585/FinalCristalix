@@ -7,9 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.mariahernandez.cristalia.SessionRepository
-import me.mariahernandez.cristalia.SessionRepositoryFalso
+import me.mariahernandez.cristalia.SessionRepositoryImpl
 
 data class MenuItemData(
     val id: String,
@@ -22,6 +23,7 @@ data class MenuItemData(
 
 data class MenuUiState(
     val estaLogueado: Boolean = false,
+    val nombreUsuario: String = "",
     val opciones: List<MenuItemData> = listOf(
         MenuItemData(
             id = "celda_unitaria",
@@ -55,10 +57,11 @@ sealed interface MenuEventoUi {
     data object NavegarADensidad : MenuEventoUi
     data object NavegarAHuecos : MenuEventoUi
     data object NavegarALogin : MenuEventoUi
+    data class NavegarAPerfil(val usuario: String) : MenuEventoUi
 }
 
 class MenuViewModel(
-    private val session: SessionRepository = SessionRepositoryFalso
+    private val session: SessionRepository = SessionRepositoryImpl
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MenuUiState())
@@ -68,14 +71,18 @@ class MenuViewModel(
     val eventos = _eventos.receiveAsFlow()
 
     init {
-        verificarSesion()
+        viewModelScope.launch {
+            session.estadoSesion.collect { logueado ->
+                val nombre = session.obtenerNombreUsuario() ?: "Usuario"
+                _uiState.update { it.copy(estaLogueado = logueado, nombreUsuario = nombre) }
+            }
+        }
     }
 
     fun verificarSesion() {
-        viewModelScope.launch {
-            val logueado = session.estaLogueado()
-            _uiState.value = _uiState.value.copy(estaLogueado = logueado)
-        }
+        val logueado = session.estaLogueado()
+        val nombre = session.obtenerNombreUsuario() ?: "Usuario"
+        _uiState.update { it.copy(estaLogueado = logueado, nombreUsuario = nombre) }
     }
 
     fun onOpcionClick(id: String) {
@@ -89,9 +96,21 @@ class MenuViewModel(
         }
     }
 
+    fun onPerfilClick() {
+        viewModelScope.launch {
+            val nombre = session.obtenerNombreUsuario() ?: "Usuario"
+            _eventos.send(MenuEventoUi.NavegarAPerfil(nombre))
+        }
+    }
+
     fun onIniciarSesionClick() {
         viewModelScope.launch {
-            _eventos.send(MenuEventoUi.NavegarALogin)
+            if (session.estaLogueado()) {
+                val nombre = session.obtenerNombreUsuario() ?: "Usuario"
+                _eventos.send(MenuEventoUi.NavegarAPerfil(nombre))
+            } else {
+                _eventos.send(MenuEventoUi.NavegarALogin)
+            }
         }
     }
 }

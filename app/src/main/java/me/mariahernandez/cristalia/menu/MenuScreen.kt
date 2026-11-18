@@ -56,11 +56,13 @@ fun MenuScreen(
     onDensidadClick: () -> Unit = {},
     onHuecosClick: () -> Unit = {},
     onIrALogin: () -> Unit = {},
+    onIrAPerfil: (String) -> Unit = {},
     viewModel: MenuViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.verificarSesion()
         viewModel.eventos.collect { evento ->
             when (evento) {
                 MenuEventoUi.NavegarACeldaUnitaria -> onCeldaUnitariaClick()
@@ -68,6 +70,7 @@ fun MenuScreen(
                 MenuEventoUi.NavegarADensidad -> onDensidadClick()
                 MenuEventoUi.NavegarAHuecos -> onHuecosClick()
                 MenuEventoUi.NavegarALogin -> onIrALogin()
+                is MenuEventoUi.NavegarAPerfil -> onIrAPerfil(evento.usuario)
             }
         }
     }
@@ -82,8 +85,13 @@ fun MenuScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Barra superior con logo y botón de Iniciar sesión
-        HeaderBar(onIrALogin = viewModel::onIniciarSesionClick)
+        // Barra superior con logo y botón de Iniciar sesión / Mi Perfil
+        HeaderBar(
+            estaLogueado = state.estaLogueado,
+            nombreUsuario = state.nombreUsuario,
+            onPerfilClick = viewModel::onPerfilClick,
+            onIrALogin = viewModel::onIniciarSesionClick
+        )
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -173,7 +181,12 @@ fun MenuScreen(
 }
 
 @Composable
-private fun HeaderBar(onIrALogin: () -> Unit) {
+private fun HeaderBar(
+    estaLogueado: Boolean,
+    nombreUsuario: String,
+    onPerfilClick: () -> Unit,
+    onIrALogin: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -197,39 +210,77 @@ private fun HeaderBar(onIrALogin: () -> Unit) {
             )
         }
 
-        // Botón Iniciar sesión
-        Surface(
-            onClick = onIrALogin,
-            shape = RoundedCornerShape(12.dp),
-            color = Color(0xFF131825),
-            border = BorderStroke(1.dp, Color(0xFF263044))
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        if (estaLogueado) {
+            Surface(
+                onClick = onPerfilClick,
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFF131825),
+                border = BorderStroke(1.dp, Paleta.Cian)
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(22.dp)
-                )
-                Column {
-                    Text(
-                        text = "Iniciar",
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 12.sp
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Mi Perfil",
+                        tint = Paleta.Cian,
+                        modifier = Modifier.size(22.dp)
                     )
-                    Text(
-                        text = "sesión",
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 12.sp
+                    Column {
+                        Text(
+                            text = "Mi Perfil",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 12.sp
+                        )
+                        Text(
+                            text = nombreUsuario.ifBlank { "Usuario" },
+                            color = Paleta.Cian,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 11.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        } else {
+            Surface(
+                onClick = onIrALogin,
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFF131825),
+                border = BorderStroke(1.dp, Color(0xFF263044))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
                     )
+                    Column {
+                        Text(
+                            text = "Iniciar",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 12.sp
+                        )
+                        Text(
+                            text = "sesión",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = 12.sp
+                        )
+                    }
                 }
             }
         }

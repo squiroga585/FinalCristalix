@@ -48,6 +48,16 @@ fun AppNavigation() {
 
     val navController = rememberNavController()
 
+    val abrirLoginOPerfil = {
+        if (SessionRepositoryImpl.estaLogueado()) {
+            val usuario = SessionRepositoryImpl.obtenerNombreUsuario() ?: "Usuario"
+            val encodedUser = Uri.encode(usuario.ifBlank { "Usuario" })
+            navController.navigate("perfil/$encodedUser")
+        } else {
+            navController.navigate(Rutas.LOGIN)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Rutas.INICIO
@@ -75,8 +85,10 @@ fun AppNavigation() {
                 onHuecosClick = {
                     navController.navigate(route = Rutas.HUECOS)
                 },
-                onIrALogin = {
-                    navController.navigate(Rutas.LOGIN)
+                onIrALogin = abrirLoginOPerfil,
+                onIrAPerfil = { usuario ->
+                    val encodedUser = Uri.encode(usuario.ifBlank { "Usuario" })
+                    navController.navigate("perfil/$encodedUser")
                 }
             )
         }
@@ -85,6 +97,7 @@ fun AppNavigation() {
             LoginScreen(
                 onVolver = { navController.popBackStack() },
                 onLoginExitoso = { usuario ->
+                    SessionRepositoryImpl.iniciarSesion(usuario)
                     val encodedUser = Uri.encode(usuario.ifBlank { "Laura Martínez" })
                     navController.navigate("perfil/$encodedUser") {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
@@ -99,22 +112,19 @@ fun AppNavigation() {
         composable(Rutas.REGISTRO) {
             RegistroScreen(
                 onVolver = { navController.popBackStack() },
-                onIrALogin = {
-                    navController.navigate(Rutas.LOGIN) {
-                        popUpTo(Rutas.LOGIN) { inclusive = true }
-                    }
-                }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
         composable(Rutas.PERFIL) { backStackEntry ->
             val usuarioRaw = backStackEntry.arguments?.getString("usuario")
-            val usuarioDecoded = usuarioRaw?.let { Uri.decode(it) } ?: "Laura Martínez"
+            val usuarioDecoded = usuarioRaw?.let { Uri.decode(it) } ?: SessionRepositoryImpl.obtenerNombreUsuario() ?: "Laura Martínez"
 
             PerfilScreen(
                 usuario = usuarioDecoded,
                 onVolver = { navController.popBackStack() },
                 onCerrarSesion = {
+                    SessionRepositoryImpl.cerrarSesion()
                     navController.navigate(Rutas.MENU) {
                         popUpTo(Rutas.MENU) { inclusive = true }
                     }
@@ -125,21 +135,21 @@ fun AppNavigation() {
         composable(Rutas.CELDA_UNITARIA) {
             CeldaUnitariaScreen(
                 onVolver = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
         composable(route = Rutas.EMPAQUETAMIENTO) {
             EmpaquetamientoScreen(
                 onVolver = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
         composable(route = Rutas.DENSIDAD) {
             DensidadScreen(
                 onVolver = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) },
+                onIrALogin = abrirLoginOPerfil,
                 onOpcionClick = { _, opcionId ->
                     navController.navigate("ingresar_datos/$opcionId")
                 }
@@ -157,7 +167,7 @@ fun AppNavigation() {
             IngresarDatosScreen(
                 estructura = estructura,
                 onBack = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) },
+                onIrALogin = abrirLoginOPerfil,
                 onNavegarAResultado = { _ ->
                     val estado = viewModel.uiState.value
                     val masaMolar = estado.masaMolar
@@ -205,7 +215,7 @@ fun AppNavigation() {
                 radioCation = rCat,
                 radioAnion = rAn,
                 onBack = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
@@ -223,7 +233,7 @@ fun AppNavigation() {
                 masaMolar = masaMolar,
                 volumenCm3 = volumenCm3,
                 onBack = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
@@ -243,14 +253,14 @@ fun AppNavigation() {
                 parametroCPm = cPm,
                 masaMolar = masaMolar,
                 onBack = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
 
         composable(route = Rutas.HUECOS) {
             HuecosScreen(
                 onVolver = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) },
+                onIrALogin = abrirLoginOPerfil,
                 onOpcionClick = { _, opcionId ->
                     navController.navigate("huecos_detalle/$opcionId")
                 }
@@ -263,7 +273,7 @@ fun AppNavigation() {
             DetalleHuecosScreen(
                 opcionId = opcionId,
                 onVolver = { navController.popBackStack() },
-                onIrALogin = { navController.navigate(route = Rutas.LOGIN) }
+                onIrALogin = abrirLoginOPerfil
             )
         }
     }

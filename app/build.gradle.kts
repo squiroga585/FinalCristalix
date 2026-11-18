@@ -53,45 +53,25 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    // JetPack Media3
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-ui:1.4.1")
 
-    dependencies {
+    // Para icons
+    implementation("androidx.compose.material:material-icons-core:1.7.5")
+    implementation("androidx.compose.material:material-icons-extended")
 
-        // 1. INICIO
+    // Navigation & ViewModel
+    implementation("androidx.navigation:navigation-compose:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
 
-        // JetPack Media3
-        implementation("androidx.media3:media3-exoplayer:1.4.1")
-        implementation("androidx.media3:media3-ui:1.4.1")
+    // Sceneview
+    implementation("io.github.sceneview:sceneview:2.3.3")
 
-        // Para icons
-        implementation("androidx.compose.material:material-icons-core:1.7.5")
-
-        // Para viewModel
-        implementation("androidx.lifecycle:lifecycle-viewmodel-compose:<versión>")
-
-        // 2. MENÚ
-
-
-
-
-
-        // 3. CELDA UNITARIA
-
-        // Sceneview
-        implementation("io.github.sceneview:sceneview:2.3.3")
-
-        // -----------------------------------------------------------     (Navegación entre pantallas)
-        implementation("androidx.navigation:navigation-compose:2.8.0")
-
-        // Sceneview
-        implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
-        implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
-
-        // Iconos
-        implementation("androidx.compose.material:material-icons-extended")
-
-
-
-
-
-    }
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 }

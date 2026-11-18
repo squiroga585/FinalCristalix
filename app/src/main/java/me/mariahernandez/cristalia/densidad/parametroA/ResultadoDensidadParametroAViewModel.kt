@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.update
 import com.cristalia.model.EstructuraCristalina
 import me.mariahernandez.cristalia.densidad.radio.DatosCalculoRadio
 import me.mariahernandez.cristalia.densidad.radio.FuncionesCalculoRadio
+import me.mariahernandez.cristalia.perfil.HistorialRepositoryImpl
+import me.mariahernandez.cristalia.perfil.OperacionBadge
 
 data class ResultadoDensidadParametroAUiState(
     val estructura: EstructuraCristalina? = null,
@@ -63,6 +65,18 @@ class ResultadoDensidadParametroAViewModel : ViewModel() {
                     cPm = cPm,
                     datos = datos,
                     pasosExpandidos = emptySet()
+                )
+            }
+
+            if (datos != null) {
+                HistorialRepositoryImpl.agregarCalculo(
+                    titulo = "${estructura.nombre} (Densidad)",
+                    descripcion = "Cálculo por Parámetro a (M: ${masaMolar} g/mol, a: ${aPm} pm)",
+                    tipoEstructura = estructura.grupoRelacion,
+                    badges = listOf(
+                        OperacionBadge("ρ:", "%.2f g/cm³".format(datos.densidadGcm3)),
+                        OperacionBadge("a:", "${aPm} pm")
+                    )
                 )
             }
         }

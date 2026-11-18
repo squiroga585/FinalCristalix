@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -113,24 +114,24 @@ fun PerfilScreen(
             PerfilUserCard(
                 nombreUsuario = state.nombreUsuario,
                 totalCalculos = state.totalCalculos,
-                totalFavoritos = state.totalFavoritos
+                totalDescargas = state.totalDescargas
             )
 
-            // Selector de Tabs: Favoritos vs Historial
+            // Selector de Tabs: Descargas vs Historial
             TabSelectorRow(
                 tabSeleccionado = state.tabSeleccionado,
                 onSelectTab = viewModel::seleccionarTab
             )
 
             // Título de la sección
-            val listaAMostrar = if (state.tabSeleccionado == TabPerfil.FAVORITOS) {
-                state.favoritosFiltrados
+            val listaAMostrar = if (state.tabSeleccionado == TabPerfil.DESCARGAS) {
+                state.descargasFiltradas
             } else {
                 state.historial
             }
 
-            val tituloSeccion = if (state.tabSeleccionado == TabPerfil.FAVORITOS) {
-                "CRISTALES GUARDADOS (${listaAMostrar.size})"
+            val tituloSeccion = if (state.tabSeleccionado == TabPerfil.DESCARGAS) {
+                "DESCARGAS GUARDADAS (${listaAMostrar.size})"
             } else {
                 "HISTORIAL DE OPERACIONES (${listaAMostrar.size})"
             }
@@ -159,8 +160,8 @@ fun PerfilScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (state.tabSeleccionado == TabPerfil.FAVORITOS)
-                                "No tienes elementos guardados como favoritos."
+                            text = if (state.tabSeleccionado == TabPerfil.DESCARGAS)
+                                "No tienes elementos guardados en descargas."
                             else "No hay operaciones registradas en el historial.",
                             color = Paleta.TextoSecundario,
                             fontSize = 13.sp
@@ -262,7 +263,7 @@ private fun HeaderBar(onVolver: () -> Unit) {
 private fun PerfilUserCard(
     nombreUsuario: String,
     totalCalculos: Int,
-    totalFavoritos: Int
+    totalDescargas: Int
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -313,8 +314,8 @@ private fun PerfilUserCard(
                 )
 
                 StatBox(
-                    numero = "$totalFavoritos",
-                    etiqueta = "Favoritos",
+                    numero = "$totalDescargas",
+                    etiqueta = "Descargas",
                     modifier = Modifier.weight(1f)
                 )
 
@@ -375,12 +376,12 @@ private fun TabSelectorRow(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val esFavoritosActivo = tabSeleccionado == TabPerfil.FAVORITOS
+            val esDescargasActivo = tabSeleccionado == TabPerfil.DESCARGAS
             Surface(
-                onClick = { onSelectTab(TabPerfil.FAVORITOS) },
+                onClick = { onSelectTab(TabPerfil.DESCARGAS) },
                 shape = RoundedCornerShape(10.dp),
-                color = if (esFavoritosActivo) Color(0xFF182236) else Color.Transparent,
-                border = if (esFavoritosActivo) BorderStroke(1.dp, Paleta.Cian.copy(alpha = 0.4f)) else null,
+                color = if (esDescargasActivo) Color(0xFF182236) else Color.Transparent,
+                border = if (esDescargasActivo) BorderStroke(1.dp, Paleta.Cian.copy(alpha = 0.4f)) else null,
                 modifier = Modifier.weight(1f)
             ) {
                 Row(
@@ -389,17 +390,17 @@ private fun TabSelectorRow(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (esFavoritosActivo) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        imageVector = Icons.Outlined.FileDownload,
                         contentDescription = null,
-                        tint = if (esFavoritosActivo) Color(0xFFFF3366) else Paleta.TextoSecundario,
+                        tint = if (esDescargasActivo) Paleta.Cian else Paleta.TextoSecundario,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Favoritos",
-                        color = if (esFavoritosActivo) Color.White else Paleta.TextoSecundario,
+                        text = "Descargas",
+                        color = if (esDescargasActivo) Color.White else Paleta.TextoSecundario,
                         fontSize = 13.sp,
-                        fontWeight = if (esFavoritosActivo) FontWeight.Bold else FontWeight.Medium
+                        fontWeight = if (esDescargasActivo) FontWeight.Bold else FontWeight.Medium
                     )
                 }
             }

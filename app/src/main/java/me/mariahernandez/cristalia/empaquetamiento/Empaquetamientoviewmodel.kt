@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.mariahernandez.cristalia.SessionRepository
-import me.mariahernandez.cristalia.SessionRepositoryFalso
+import me.mariahernandez.cristalia.SessionRepositoryImpl
 import me.mariahernandez.cristalia.celdaunitaria.EventoUi
+import me.mariahernandez.cristalia.perfil.HistorialRepositoryImpl
+import me.mariahernandez.cristalia.perfil.OperacionBadge
 
 /** Estado que sobrevive a la rotación de pantalla. */
 data class EmpaquetamientoUiState(
@@ -20,7 +22,7 @@ data class EmpaquetamientoUiState(
 
 //                                       sesion          tipo           valor por defecto
 class EmpaquetamientoViewModel(
-    private val session: SessionRepository = SessionRepositoryFalso
+    private val session: SessionRepository = SessionRepositoryImpl
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EmpaquetamientoUiState())
@@ -38,6 +40,16 @@ class EmpaquetamientoViewModel(
     fun onDescargarClick(archivoGlb: String) {
         viewModelScope.launch {
             if (session.estaLogueado()) {
+                HistorialRepositoryImpl.agregarCalculo(
+                    titulo = "Factor Empaquetamiento (${_uiState.value.tipoSeleccionado.sigla})",
+                    descripcion = "Modelo y simulación guardada/descargada",
+                    tipoEstructura = _uiState.value.tipoSeleccionado.sigla,
+                    badges = listOf(
+                        OperacionBadge("APF:", "%.2f".format(_uiState.value.tipoSeleccionado.fe)),
+                        OperacionBadge("Modelo", "GLB")
+                    ),
+                    esDescarga = true
+                )
                 _eventos.send(EventoUi.Descargar(archivoGlb))
             } else {
                 _eventos.send(EventoUi.IrALogin)
